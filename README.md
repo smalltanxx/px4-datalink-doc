@@ -4,14 +4,14 @@
 
 - **源码基线**：PX4-Autopilot `v1.18.0-rc1`（commit `fca3df865a`）。文中所有 `文件:行号` 都以这个 tag 为准，`git show v1.18.0-rc1:<path>` 即可对上。
 - **运行基线**：`make px4_sitl gz_netdrone`（Gazebo Harmonic）+ `MicroXRCEAgent udp4 -p 8888` + QGroundControl + `ros2 run ax_circular_flight ax_circular_flight`。
-- **规模**：93 页 A4，49 张表，12 幅图。
+- **规模**：95 页 A4，49 张表，12 幅图。
 
 ## 阅读入口
 
 | 格式 | 文件 | 说明 |
 |---|---|---|
 | 在线版 | <https://smalltanxx.github.io/px4-datalink-doc/> | 浏览器直接读，图已内嵌，不用下载 |
-| PDF | [PX4_1.18_数据链代码级文档.pdf](PX4_1.18_数据链代码级文档.pdf) | 93 页，打印、引用用这版 |
+| PDF | [PX4_1.18_数据链代码级文档.pdf](PX4_1.18_数据链代码级文档.pdf) | 95 页，打印、引用用这版 |
 | Word | [PX4_1.18_数据链代码级文档.docx](PX4_1.18_数据链代码级文档.docx) | 原生目录域，可二次编辑 |
 | Markdown | [PX4_1.18_数据链代码级文档.md](PX4_1.18_数据链代码级文档.md) | 源文，便于全文检索与 diff |
 
