@@ -4982,8 +4982,24 @@ ms（<code>Tools/simulation/gz/worlds/default.sdf:5</code>，
 <strong>4 ms 的整数倍</strong>上； 本次样本实际只观察到 0 和 4000 µs
 两种取值。</p>
 <blockquote>
-<p>口径：本章表格除注明”墙钟”外，单位都是<strong>仿真时间
-µs</strong>；统计量给 n / p50 / p95 / max。</p>
+<p><strong>读表说明（后面各表不再重复）</strong></p>
+<ul>
+<li><strong>样本数
+n</strong>：参与统计的样本条数。它是”多少条消息/多少次测量”，<strong>不是</strong>重复实验的次数。</li>
+<li><strong>p50</strong>：中位数。一半样本的值不超过它。例如 p50 = 250
+µs 表示”一半的测量在 0.25 ms 内完成”。</li>
+<li><strong>p95</strong>：95 分位。95%
+的样本不超过它，用来衡量尾部（偶发的慢样本）。p95 = 514 µs 表示 “95%
+的测量在 0.51 ms 内完成，最慢的 5% 超过它”。</li>
+<li><strong>max</strong>：本次观测到的最大值。max = 1349 µs
+表示最慢的一次是 1.349 ms。</li>
+<li><strong>单位</strong>：时间一律是 <strong>µs（微秒）</strong>，1 µs
+= 0.001 ms = 10⁻⁶ s。表头写”墙钟 µs”的，表示
+时间戳取自主机时钟（<code>CLOCK_MONOTONIC</code> 或
+<code>CLOCK_REALTIME</code>）；其余表格是<strong>仿真时间
+µs</strong>。</li>
+<li>本章所有数字都是<strong>本地 SITL 测试，非实机</strong>。</li>
+</ul>
 </blockquote>
 <h3 id="传感器上行gazebo-gz_bridge-uorb">14.2 传感器上行：Gazebo →
 gz_bridge → uORB</h3>
@@ -4999,9 +5015,9 @@ gz_bridge → uORB</h3>
 <thead>
 <tr>
 <th>传感器</th>
-<th>标称</th>
-<th>实测周期中位</th>
-<th>抖动 p95</th>
+<th>标称频率</th>
+<th>实测周期中位（µs）</th>
+<th>周期抖动 p95（µs）</th>
 <th>说明</th>
 </tr>
 </thead>
@@ -5042,10 +5058,10 @@ gz_bridge → uORB</h3>
 <tr>
 <th>通道</th>
 <th>uORB topic</th>
-<th>n</th>
-<th>p50</th>
-<th>p95</th>
-<th>max</th>
+<th>样本数 n</th>
+<th>p50（µs）</th>
+<th>p95（µs）</th>
+<th>max（µs）</th>
 </tr>
 </thead>
 <tbody>
@@ -5182,10 +5198,10 @@ profile（<code>SDLOG_PROFILE=17</code>，bit 4）让控制 topic 全速率记�
 <thead>
 <tr>
 <th>上游 → 下游</th>
-<th>n</th>
-<th>p50</th>
-<th>p95</th>
-<th>max</th>
+<th>样本数 n</th>
+<th>p50（µs）</th>
+<th>p95（µs）</th>
+<th>max（µs）</th>
 <th>分布</th>
 </tr>
 </thead>
@@ -5378,16 +5394,16 @@ loopback 的一次往返 短于一个 4 ms 仿真步，仿真时钟没推进，R
 <table>
 <thead>
 <tr>
-<th>指标（墙钟 µs）</th>
-<th>n</th>
-<th>p50</th>
-<th>p95</th>
-<th>max</th>
+<th>指标</th>
+<th>样本数 n</th>
+<th>p50（µs）</th>
+<th>p95（µs）</th>
+<th>max（µs）</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>PING RTT（有效样本）</td>
+<td>PING 往返时延（发请求→收回包）</td>
 <td>246</td>
 <td>250</td>
 <td>514</td>
@@ -5416,6 +5432,11 @@ loopback 的一次往返 短于一个 4 ms 仿真步，仿真时钟没推进，R
 </tr>
 </tbody>
 </table>
+<p>以 PING 为例：246 次有效往返里，一半在 <strong>250 µs（0.25
+ms）</strong> 内完成，95% 在 <strong>514 µs（0.51 ms）</strong>
+内完成，最慢的一次是 <strong>1349 µs（1.35 ms）</strong>。PING 由 PX4
+在接收 线程里直接回包，不经过 1.5 ms
+主循环，所以它比下面的参数请求快一个量级。</p>
 <blockquote>
 <p>原始 PING 记录 249 条，其中 3
 条（<code>seq=0/1/2</code>）不是回包，而是 PX4 自己的 PING 流：
@@ -5461,9 +5482,9 @@ p50 +4.0 ms、max +4.5 ms；这个 4 ms
 <thead>
 <tr>
 <th>链路</th>
-<th>源码推导的预期区间（EXPECTED.md）</th>
-<th>实测 p50</th>
-<th>实测 p95</th>
+<th>源码推导的预期区间</th>
+<th>实测 p50（µs）</th>
+<th>实测 p95（µs）</th>
 <th>差异解释</th>
 </tr>
 </thead>
