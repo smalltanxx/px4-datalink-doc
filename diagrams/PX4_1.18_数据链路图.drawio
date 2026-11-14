@@ -1,0 +1,845 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram name="00 总体链路" id="p00">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1160" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t" value="PX4 v1.18.0-rc1 数据链总体拓扑（SITL 实验）" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=24;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="470" y="15" width="660" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="st" value="线型：橙色双箭头 ↔ = 双向通道/总线（①–⑤）；橙色单箭头 → = 单向数据流（⑥）；灰色虚线框 = 运行上下文，不是链路节点。仅画本次 SITL 实际链路。" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10.8;fontColor=#555555;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="250" y="50" width="1100" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gzb" value="Gazebo Harmonic 8.15（独立进程）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;dashed=1;verticalAlign=top;fontStyle=1;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="300" height="820" as="geometry" />
+        </mxCell>
+        <mxCell id="gz2" value="传感器系统插件&#10;IMU 250 Hz / NavSat 10 Hz&#10;Mag 100 Hz / AirPressure 50 Hz&#10;pose/info、clock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="65" y="175" width="250" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="gz3" value="MulticopterMotorModel ×4&#10;/netdrone_0/command/motor_speed&#10;velocity 模式，maxRotVelocity=1466.32" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="65" y="435" width="250" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="px4b" value="PX4 v1.18.0-rc1（单个 px4 进程）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;dashed=1;verticalAlign=top;fontStyle=1;fontSize=13" vertex="1" parent="1">
+          <mxGeometry x="390" y="90" width="760" height="820" as="geometry" />
+        </mxCell>
+        <mxCell id="br" value="gz_bridge 模块&#10;（PX4 进程内 work item，不是独立进程）&#10;GZBridge.cpp / GZMixingInterfaceESC.cpp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="420" y="120" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="orb" value="uORB 发布/订阅总线（双向）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=11;fontStyle=1;horizontal=0" vertex="1" parent="1">
+          <mxGeometry x="715" y="120" width="30" height="750" as="geometry" />
+        </mxCell>
+        <mxCell id="sen" value="sensors&#10;VehicleGPSPosition / VotedSensorsUpdate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="790" y="120" width="310" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ekf" value="EKF2&#10;UpdateGpsSample / 状态估计" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="790" y="230" width="310" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cmd" value="commander&#10;模式/解锁/失效保护 + vehicle_control_mode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="790" y="340" width="310" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ctl" value="mc_pos_control → mc_att_control → mc_rate_control&#10;位置/姿态/角速率串级控制" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="790" y="450" width="310" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="alc" value="control_allocator&#10;CA_AIRFRAME=0 / 4 rotors" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="790" y="560" width="310" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="mav" value="mavlink 模块&lt;br&gt;UDP GCS 18570&lt;br&gt;&lt;span style=&quot;font-size:9.5px&quot;&gt;uORB ↔ MAVLink&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="790" y="700" width="250" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="uxr" value="uxrce_dds_client&lt;br&gt;UDP 8888&lt;br&gt;&lt;span style=&quot;font-size:9.5px&quot;&gt;uORB ↔ /fmu/out、/fmu/in&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="790" y="800" width="250" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="gz_bridge 把 Gazebo 传感器数据写入 uORB，又从 uORB 读取 actuator_motors 写回 Gazebo。" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6;spacingTop=4;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="420" y="600" width="250" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="qgc" value="QGroundControl&#10;（独立进程，MAVLink GCS）&#10;监听 UDP 14550&#10;地图 / 姿态 / GPS / RC / 参数" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#00838F;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1190" y="120" width="350" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="agt" value="MicroXRCEAgent udp4 -p 8888&#10;（独立进程，XRCE-DDS Agent）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1190" y="400" width="350" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ros" value="ROS 2 Humble&#10;ax_circular_flight 节点&#10;订阅 /fmu/out/*_vN；发布 /fmu/in/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="1190" y="570" width="350" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=9;endArrow=block;endFill=1;endSize=9;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="gztx" target="br">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="380" y="230" /><mxPoint x="380" y="165" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=8;endArrow=block;endFill=1;endSize=8;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.06;entryDx=0;entryDy=0;" edge="1" parent="1" source="br" target="orb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=8;endArrow=block;endFill=1;endSize=8;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.0533;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orb" target="sen">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=8;endArrow=block;endFill=1;endSize=8;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.2000;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orb" target="ekf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=8;endArrow=block;endFill=1;endSize=8;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.3467;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orb" target="cmd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=8;endArrow=block;endFill=1;endSize=8;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.4933;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orb" target="ctl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=8;endArrow=block;endFill=1;endSize=8;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.6333;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orb" target="alc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="br" target="gz3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="405" y="210" />
+              <mxPoint x="405" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=9;endArrow=block;endFill=1;endSize=9;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="mav" target="qgc">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1125" y="735" /><mxPoint x="1125" y="180" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=9;endArrow=block;endFill=1;endSize=9;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="uxr" target="agt">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="1170" y="835" /><mxPoint x="1170" y="435" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=9;endArrow=block;endFill=1;endSize=9;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="agt" target="ros">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="b1" value="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="352" y="242" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" value="2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1045" y="700" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" value="3" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1045" y="800" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" value="4" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1370" y="505" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="b5" value="5" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="740" y="300" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="b6" value="6" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#EF6C00;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="390" y="360" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lb" value="&lt;b style=&quot;font-size:12.5px&quot;&gt;本实验链路清单（按进程边界）&lt;/b&gt;&lt;br&gt;① Gazebo ↔ PX4：gz-transport 双向（上行 传感器/clock/pose；下行 执行器/电机指令；⑥ 为执行器下行细节）&lt;br&gt;② PX4 ↔ QGC：MAVLink v2 over UDP 双向（上行 遥测/状态/ACK；下行 指令/参数/任务、mission）&lt;br&gt;③ PX4 ↔ Agent：XRCE-DDS over UDP 8888 双向（上行 uORB→DDS；下行 DDS→uORB）&lt;br&gt;④ Agent ↔ ROS 2：DDS/RTPS domain 0 双向（上行 /fmu/out；下行 /fmu/in）&lt;br&gt;⑤ PX4 内部：uORB 双向发布/订阅总线（所有 PX4 模块；mavlink、uxrce_dds_client 也接在此）&lt;br&gt;&lt;span style=&quot;color:#5A6670&quot;&gt;　　逻辑处理顺序：sensor_* → EKF2 → commander/control → actuator_motors&lt;/span&gt;&lt;br&gt;⑥ PX4 → Gazebo 电机：actuator_motors → gz.msgs.Actuators（/netdrone_0/command/motor_speed）&lt;br&gt;⑦ 真实硬件替换：RC→rc_input，GNSS→gps 驱动，PWM/DShot→pwm_out（不在本图，见第 11 章）" style="text;html=1;align=left;verticalAlign=top;fontSize=11.4;fontColor=#212121;fillColor=#FAFAFA;strokeColor=#BDBDBD;spacingLeft=9;spacingTop=6;whiteSpace=wrap" vertex="1" parent="1">
+          <mxGeometry x="40" y="915" width="1500" height="185" as="geometry" />
+        </mxCell>
+      <mxCell id="gzserver" value="gz sim -r -s default.sdf（server）&lt;br&gt;&lt;span style=&quot;font-size:10px;color:#558B2F&quot;&gt;world = /world/default&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;fontStyle=1;fontColor=#2E7D32;spacingLeft=2" vertex="1" parent="1"><mxGeometry x="65" y="118" width="250" height="40" as="geometry" /></mxCell><mxCell id="gzctx" value="&lt;b&gt;运行上下文（不是链路节点）&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10.5px&quot;&gt;Physics/ODE：max_step_size = 0.004 s&lt;br&gt;gz sim -g：仅 GUI 观察，不参与数据链&lt;br&gt;模型：netdrone/model.sdf&lt;br&gt;世界原点：47.397971, 8.546164&lt;br&gt;&lt;i&gt;server 加载 world、推进物理并产生 clock/传感器数据；GUI 只显示。&lt;/i&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#9E9E9E;dashed=1;dashPattern=6 4;fontSize=11;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;fontColor=#455A64" vertex="1" parent="1"><mxGeometry x="60" y="550" width="260" height="205" as="geometry" /></mxCell><mxCell id="g1note" value="&lt;b style=&quot;color:#EF6C00&quot;&gt;① gz-transport 双向&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:9.5px&quot;&gt;上行 Gazebo→PX4：传感器 / clock / pose&lt;br&gt;下行 PX4→Gazebo：执行器 / 电机指令（见 ⑥）&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#455A64;spacingLeft=0;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="65" y="300" width="250" height="80" as="geometry" /></mxCell><mxCell id="gztx" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#EF6C00;strokeColor=#EF6C00;" vertex="1" parent="1"><mxGeometry x="337" y="226" width="8" height="8" as="geometry" /></mxCell><mxCell id="e1s" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="gz2" target="gztx"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="e13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=7;endArrow=block;endFill=1;endSize=7;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.82;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orb" target="mav"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="e14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=7;endArrow=block;endFill=1;endSize=7;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.9533;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="orb" target="uxr"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="uorbnote" value="&lt;b&gt;uORB 是双向发布/订阅总线&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:9.2px&quot;&gt;模块既可 publish 也可 subscribe。ROS 2 读 GPS 时，uxrce_dds_client 订阅 GPS 对应的 uORB 话题，再发布 /fmu/out；ROS 2 发 /fmu/in 时，uxrce_dds_client 写入对应 uORB，控制模块再订阅。&lt;/span&gt;" style="text;html=1;align=left;verticalAlign=top;fontSize=9.8;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6;spacingTop=4;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="420" y="700" width="250" height="95" as="geometry" /></mxCell></root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="01 启动时序" id="p01">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p01-title" value="`make px4_sitl gz_netdrone` 启动时序（代码级）" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=23;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="430" y="15" width="740" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-time" value="时间" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#555555" vertex="1" parent="1">
+          <mxGeometry x="455" y="70" width="60" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p01-s1" value="① make px4_sitl gz_netdrone&#10;CMake 配置目标 px4_sitl_default；gz_netdrone 是 add_custom_target&#10;环境：PX4_SIM_MODEL=gz_netdrone / GZ_IP=127.0.0.1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="80" width="500" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s2" value="② 启动 build/px4_sitl_default/bin/px4&#10;工作目录 build/px4_sitl_default/rootfs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="185" width="500" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s3" value="③ px4 执行 ROMFS/…/init.d-posix/rcS&#10;按 PX4_SIM_MODEL 找到 4050_gz_netdrone&#10;source rc.mc_defaults → VEHICLE_TYPE=mc, MAV_TYPE=2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="275" width="500" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s4" value="④ rcS:243 source px4-rc.simulator&#10;SIM_GZ_EN=1 → source px4-rc.gzsim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="383" width="500" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s5" value="⑤ 启动 Gazebo server 与 GUI&#10;gz sim --verbose=1 -r -s worlds/default.sdf&#10;gz sim -g（HEADLESS 为空时）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="473" width="500" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s6" value="⑥ gz service /world/default/create 生成 netdrone_0&#10;然后 gz_bridge start -w default -n netdrone_0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="580" width="500" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s7" value="⑦ GZBridge::init()&#10;等 clock → 订阅 pose → 订阅 IMU/Mag/NavSat/Baro&#10;初始化 ESC/Servo/Wheel mixing 接口" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="670" width="500" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s8" value="⑧ rcS 继续启动：rc_update / manual_control / sensors&#10;commander / ekf2 / pwm_out_sim / navigator / 控制链" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="780" width="500" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s9" value="⑨ uxrce_dds_client start -t udp -p 8888&#10;source px4-rc.mavlink：mavlink start -u 18570" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="880" width="500" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-s10" value="⑩ 主机侧：QGC 连 18570；MicroXRCEAgent 监听 8888；ROS 2 节点启动" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=11;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="540" y="972" width="500" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p01-n1" value="CMake：src/modules/simulation/gz_bridge/CMakeLists.txt:108-121&#10;Makefile：cmake-build 宏，ARGS 传给 cmake --build" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="88" width="440" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n2" value="platforms/posix/CMakeLists.txt:157-158&#10;SITL_WORKING_DIR = build/px4_sitl_default/rootfs" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="190" width="440" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n3" value="rcS:240-293；airframe 4050_gz_netdrone:11-53&#10;注意 rc.mc_defaults 设置 VEHICLE_TYPE=mc" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="285" width="440" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n4" value="px4-rc.simulator：SIM_GZ_EN=1 分支&#10;px4-rc.gzsim:31-55" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="390" width="440" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n5" value="px4-rc.gzsim:50-55&#10;若已有 world，则跳过启动，直接连接" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#33691E;fillColor=#F1F8E9;strokeColor=#AED581;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="488" width="440" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n6" value="px4-rc.gzsim:145-156&#10;模型名 = netdrone_0；SDF include 后由 gz_bridge 接管" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="586" width="440" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n7" value="GZBridge.cpp:64-170&#10;clock 回调：341-357；navsat 订阅：315-326；navSatCallback：668-754" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="682" width="440" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n8" value="rcS:260-293；rc.mc_apps：control_allocator / mc_rate_control / mc_att_control / mc_pos_control" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="790" width="440" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-n9" value="rcS:326；px4-rc.mavlink:20&#10;UXRCE_DDS_AG_IP 默认 2130706433 = 127.0.0.1" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1080" y="888" width="440" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p01-e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s1" target="p01-s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s2" target="p01-s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s3" target="p01-s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s4" target="p01-s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s5" target="p01-s6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s6" target="p01-s7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s7" target="p01-s8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s8" target="p01-s9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p01-e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p01-s9" target="p01-s10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="02 GPS 链路" id="p02">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p02-title" value="GPS / GNSS 链路：从 Gazebo NavSat 到 EKF2、QGC、ROS 2" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=23;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="420" y="15" width="760" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-sub" value="SITL 主链路：Gazebo NavSat → gz_bridge → sensor_gps → VehicleGPSPosition → vehicle_gps_position → EKF2" style="text;html=1;align=center;verticalAlign=middle;fontSize=12;fontColor=#555555" vertex="1" parent="1">
+          <mxGeometry x="380" y="55" width="840" height="22" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p02-hw1" value="真实 GNSS 接收机&lt;br&gt;UBX / NMEA / RTCM&lt;br&gt;（串口双向）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#757575;dashed=1;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-hw2" value="gps 驱动&#10;src/drivers/gps/gps.cpp&#10;协议识别 + RTCM 注入" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#757575;dashed=1;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="300" y="100" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-hw3" value="sensor_gps&#10;（与 SITL 同一 uORB 接口）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;dashed=1;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="580" y="100" width="200" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p02-gz" value="Gazebo NavSat 传感器&#10;navsat_sensor，10 Hz&#10;纬度/经度/高度/速度" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=11" vertex="1" parent="1">
+          <mxGeometry x="40" y="220" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-bridge" value="GZBridge::navSatCallback&#10;首次 fix 初始化 _pos_ref&#10;加 ublox F9P 噪声模型&#10;填 sensor_gps_s" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="300" y="220" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-sg" value="sensor_gps&#10;uORB 多实例&#10;≥4 颗星 → fix_type=3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="580" y="220" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-vgp" value="VehicleGPSPosition&#10;选主/备份、天线偏移&#10;时间延迟/PPS 校正&#10;发布 vehicle_gps_position" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="820" y="220" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-vgp2" value="vehicle_gps_position&#10;独立 uORB topic（SensorGps）&#10;VehicleGPSPosition 发布" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1100" y="220" width="230" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-ekf" value="EKF2::UpdateGpsSample&#10;setGpsData()&#10;GNSS 位置/速度/高度融合" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1370" y="220" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p02-lpos" value="vehicle_local_position&#10;x/y/z、vx/vy/vz、xy_valid" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1370" y="380" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-gpos" value="vehicle_global_position&#10;lat/lon/alt（融合后）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1100" y="380" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-mc" value="mc_pos_control&#10;OFFBOARD 位置控制输入" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1370" y="500" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-mav" value="MAVLink 流&lt;br&gt;GPS_RAW_INT ← sensor_gps&lt;br&gt;GLOBAL_POSITION_INT ← EKF2&lt;br&gt;GPS2_RAW（第二接收机）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#00838F;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="760" y="380" width="290" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-qgc" value="QGC&#10;地图/卫星数/精度/RTK 状态" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#00838F;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="430" y="380" width="270" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-ux" value="uXRCE-DDS&#10;/fmu/out/vehicle_gps_position&#10;→ px4_msgs/SensorGps" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1080" y="620" width="250" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-ros" value="ROS 2 节点&#10;GPS 原始/融合位置监视" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="760" y="620" width="260" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p02-rtcm0" value="QGC / 地面站&#10;GPS_RTCM_DATA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#00838F;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="820" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-rtcm1" value="MavlinkReceiver&#10;handle_message_gps_rtcm_data&#10;重组分片" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="300" y="820" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-rtcm2" value="rtcm_corrections&#10;uORB 300 B 分块" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="580" y="820" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-rtcm3" value="GPS::handleInjectDataTopic&lt;br&gt;→ 串口写入真实 GNSS 接收机&lt;br&gt;（见上方 hw1）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#757575;dashed=1;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="820" y="820" width="240" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p02-note" value="关键参数：SIM_GPS_USED=10（默认，≥4 才有 3D fix）；EKF2_REQ_GPS_H=0.5（SITL 加速）；&#10;EKF2_GPS_CTRL 选择融合水平/垂直/速度/偏航；SENS_GPS_MASK 控制双接收机融合；SENS_GPS0_DELAY 校时。&#10;世界原点（default.sdf）：47.397971, 8.546164；首次 NavSat 只建立参考点，不发布 sensor_gps。" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#4E342E;fillColor=#EFEBE9;strokeColor=#A1887F;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="40" y="910" width="1530" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p02-e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-gz" target="p02-bridge">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-bridge" target="p02-sg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-sg" target="p02-vgp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-vgp" target="p02-vgp2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-vgp2" target="p02-ekf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-ekf" target="p02-lpos">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0" edge="1" parent="1" source="p02-ekf" target="p02-gpos">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1470" y="350" />
+              <mxPoint x="1360" y="350" />
+              <mxPoint x="1360" y="415" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p02-e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-lpos" target="p02-mc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-gpos" target="p02-mav">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-mav" target="p02-qgc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0" edge="1" parent="1" source="p02-vgp2" target="p02-ux">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1350" y="260" />
+              <mxPoint x="1350" y="655" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p02-e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-ux" target="p02-ros">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=block;startFill=1;startSize=8;endArrow=block;endFill=1;endSize=8;strokeWidth=2;strokeColor=#EF6C00;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="p02-hw1" target="p02-hw2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;dashed=1" edge="1" parent="1" source="p02-hw2" target="p02-hw3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-rtcm0" target="p02-rtcm1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p02-rtcm1" target="p02-rtcm2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#9E9E9E;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="p02-rtcm2" target="p02-rtcm3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p02-e18" value="同一 uORB 接口&lt;br&gt;（二选一）" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=none;endArrow=none;strokeWidth=1.5;strokeColor=#757575;dashed=1;dashPattern=4 3;fontSize=9;" edge="1" parent="1" source="p02-hw3" target="p02-sg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      <mxCell id="p02-e19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p02-sg" target="p02-mav"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="730" y="340" /><mxPoint x="900" y="340" /></Array></mxGeometry></mxCell></root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="03 遥控/手动控制链路" id="p03">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p03-title" value="遥控 / 手动控制链路：RC、QGC 摇杆、RC override 如何汇入 manual_control_setpoint" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="250" y="15" width="1100" height="40" as="geometry" /></mxCell><mxCell id="p03-sub" value="COM_RC_IN_MODE=1（以 param show 为准）：真实 RC 不参与选源；QGC 摇杆经 MANUAL_CONTROL 生效；QGC RC override 进入 input_rc 但被 selector 拒绝" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11.5;fontColor=#5A6670;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="150" y="58" width="1300" height="40" as="geometry" /></mxCell><mxCell id="p03-rx" value="RC 接收机&lt;br&gt;SBUS / CRSF / DSM / PPM&lt;br&gt;/dev/ttyS* 或 PPM 引脚" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9E9E9E;strokeWidth=1.5;dashed=1;fontSize=12;align=center;fontColor=#616161;" vertex="1" parent="1"><mxGeometry x="40" y="180" width="190" height="70" as="geometry" /></mxCell><mxCell id="p03-rcin" value="rc_input 驱动&lt;br&gt;协议扫描/解析&lt;br&gt;发布 input_rc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9E9E9E;strokeWidth=1.5;dashed=1;fontSize=12;align=center;fontColor=#616161;" vertex="1" parent="1"><mxGeometry x="270" y="180" width="190" height="70" as="geometry" /></mxCell><mxCell id="p03-inrc" value="input_rc&lt;br&gt;18 通道原始值&lt;br&gt;RSSI / failsafe" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="500" y="180" width="180" height="90" as="geometry" /></mxCell><mxCell id="p03-rcup" value="rc_update&lt;br&gt;校准/映射/开关解码&lt;br&gt;发布 manual_control_input&lt;br&gt;+ manual_control_switches" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="730" y="180" width="220" height="90" as="geometry" /></mxCell><mxCell id="p03-rcch" value="rc_channels&lt;br&gt;（校准后通道值）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="760" y="100" width="200" height="50" as="geometry" /></mxCell><mxCell id="p03-mavrc" value="MAVLink RC_CHANNELS&lt;br&gt;→ QGC 显示" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#00838F;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="1010" y="100" width="280" height="50" as="geometry" /></mxCell><mxCell id="p03-mcin-rc" value="manual_control_input&lt;br&gt;data_source = SOURCE_RC&lt;br&gt;（override / 真机 RC；已发布）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;strokeWidth=1.5;fontSize=11;align=center;" vertex="1" parent="1"><mxGeometry x="760" y="300" width="230" height="65" as="geometry" /></mxCell><mxCell id="p03-sw" value="manual_control_switches&lt;br&gt;mode_slot / arm_switch&lt;br&gt;（旁路输出，本次不参与选源）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="760" y="395" width="230" height="65" as="geometry" /></mxCell><mxCell id="p03-qgc-ovr" value="QGC RC override&lt;br&gt;MAVLink RC_CHANNELS_OVERRIDE&lt;br&gt;chan1..18_raw" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#00838F;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="40" y="350" width="220" height="70" as="geometry" /></mxCell><mxCell id="p03-qgc-stick" value="QGC 摇杆&lt;br&gt;MAVLink MANUAL_CONTROL&lt;br&gt;x/y/z/r ∈ [-1000,1000]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#00838F;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="40" y="520" width="220" height="70" as="geometry" /></mxCell><mxCell id="p03-mcin-mav" value="manual_control_input&lt;br&gt;data_source = SOURCE_MAVLINK_0&lt;br&gt;（QGC 摇杆）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="780" y="500" width="220" height="65" as="geometry" /></mxCell><mxCell id="p03-sel" value="ManualControl / ManualControlSelector&lt;br&gt;COM_RC_IN_MODE=1 → 只选 MAVLINK_0&lt;br&gt;超时 COM_RC_LOSS_T=0.5s" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;strokeWidth=2;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="1080" y="360" width="310" height="160" as="geometry" /></mxCell><mxCell id="p03-sp" value="manual_control_setpoint&lt;br&gt;roll/pitch/yaw/throttle&lt;br&gt;sticks_moving / buttons / data_source" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="1080" y="580" width="310" height="85" as="geometry" /></mxCell><mxCell id="p03-cmd" value="commander&lt;br&gt;摇杆解锁/上锁手势&lt;br&gt;模式开关 / action_request" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="720" y="730" width="270" height="70" as="geometry" /></mxCell><mxCell id="p03-mc" value="mc_pos_control / mc_att_control&lt;br&gt;手动位置/姿态控制" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;strokeWidth=1.5;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="1080" y="730" width="310" height="70" as="geometry" /></mxCell><mxCell id="p03-e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#9E9E9E;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="p03-rx" target="p03-rcin"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#9E9E9E;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="p03-rcin" target="p03-inrc"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-qgc-ovr" target="p03-inrc"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="590" y="385" /><mxPoint x="590" y="270" /></Array></mxGeometry></mxCell><mxCell id="p03-e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-inrc" target="p03-rcup"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-rcup" target="p03-mcin-rc"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-rcup" target="p03-rcch"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-e7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-rcch" target="p03-mavrc"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-e8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-rcup" target="p03-sw"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="225" /><mxPoint x="700" y="427" /><mxPoint x="760" y="427" /></Array></mxGeometry></mxCell><mxCell id="p03-e9" value="被拒绝" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;strokeColor=#EF6C00;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="p03-mcin-rc" target="p03-sel"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1035" y="332" /><mxPoint x="1035" y="400" /><mxPoint x="1080" y="400" /></Array></mxGeometry></mxCell><mxCell id="p03-e10" value="被选中" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-mcin-mav" target="p03-sel"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1050" y="532" /><mxPoint x="1050" y="480" /><mxPoint x="1080" y="480" /></Array></mxGeometry></mxCell><mxCell id="p03-e11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-qgc-stick" target="p03-mcin-mav"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="555" /><mxPoint x="500" y="532" /><mxPoint x="780" y="532" /></Array></mxGeometry></mxCell><mxCell id="p03-e12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-sel" target="p03-sp"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-e13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-sp" target="p03-cmd"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="860" y="622" /><mxPoint x="860" y="730" /></Array></mxGeometry></mxCell><mxCell id="p03-e14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2.2;strokeColor=#EF6C00;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="p03-sp" target="p03-mc"><mxGeometry relative="1" as="geometry" /></mxCell><mxCell id="p03-legend-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#CFD8DC;strokeWidth=1;" vertex="1" parent="1"><mxGeometry x="40" y="835" width="1520" height="125" as="geometry" /></mxCell><mxCell id="p03-legend" value="&lt;b&gt;图例&lt;/b&gt;&lt;br&gt;&lt;b style=&quot;color:#EF6C00&quot;&gt;橙色实线&lt;/b&gt;：本次 SITL 实际发生的数据流（发布 / 订阅 / 调用）&lt;br&gt;&lt;b style=&quot;color:#EF6C00&quot;&gt;橙色虚线&lt;/b&gt;：代码路径存在，但本次 SITL 不生效（硬件未接入，或被 selector 拒绝）&lt;br&gt;&lt;span style=&quot;color:#616161&quot;&gt;灰色虚线框&lt;/span&gt;：真实硬件支路，SITL 未接入" style="text;html=1;align=left;verticalAlign=top;fontSize=11.5;fontColor=#37474F;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="55" y="843" width="720" height="110" as="geometry" /></mxCell><mxCell id="p03-key" value="&lt;b&gt;关键点&lt;/b&gt;&lt;br&gt;COM_RC_IN_MODE=1 → selector 只接受 &lt;b&gt;SOURCE_MAVLINK_0&lt;/b&gt;；QGC 摇杆是本次唯一有效的手动输入。&lt;br&gt;QGC &lt;b&gt;RC_CHANNELS_OVERRIDE&lt;/b&gt; 会进入 &lt;b&gt;input_rc&lt;/b&gt; 并触发 &lt;b&gt;rc_update&lt;/b&gt;，但生成的 &lt;b&gt;manual_control_input&lt;/b&gt; 仍是 &lt;b&gt;SOURCE_RC&lt;/b&gt;，被 selector 拒绝。" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#37474F;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="800" y="843" width="745" height="110" as="geometry" /></mxCell></root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="04 MAVLink/QGC 链路" id="p04">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p04-title" value="MAVLink / QGC 链路：消息级信息流" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=23;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="450" y="15" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-sub" value="QGC 与 ROS 2 是两条独立链路：QGC 负责监视/地面操作；本次圆周飞行的控制指令来自 ROS 2" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#B71C1C" vertex="1" parent="1">
+          <mxGeometry x="300" y="55" width="1000" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-inband" value="① 入站：QGC → PX4（mavlink_receiver.cpp，UDP 18570）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;fontStyle=1;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="30" y="85" width="1480" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h0" value="QGC 发送" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="30" y="120" width="270" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h1" value="UDP / 端口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="310" y="120" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h2" value="MavlinkReceiver 入口" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="480" y="120" width="310" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h3" value="uORB / 模块" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="800" y="120" width="310" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h4" value="结果" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="1120" y="120" width="390" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i00" value="COMMAND_LONG / COMMAND_INT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="150" width="270" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i01" value="MAVLink v2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="150" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i02" value="handle_message_command_long / _int" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="150" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i03" value="vehicle_command_s" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="150" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i04" value="commander::handle_command()；解锁/模式/ACK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="150" width="390" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i10" value="SET_MODE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="205" width="270" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i11" value="MAVLink v2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="205" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i12" value="handle_message_set_mode" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="205" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i13" value="vehicle_command_s" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="205" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i14" value="组装 VEHICLE_CMD_DO_SET_MODE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="205" width="390" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i20" value="MANUAL_CONTROL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="260" width="270" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i21" value="MAVLink v2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="260" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i22" value="handle_message_manual_control" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="260" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i23" value="manual_control_input" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="260" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i24" value="ManualControl → manual_control_setpoint" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="260" width="390" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i30" value="RC_CHANNELS_OVERRIDE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="315" width="270" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i31" value="MAVLink v2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="315" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i32" value="handle_message_rc_channels_override" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="315" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i33" value="input_rc_s" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="315" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i34" value="rc_update；SITL 下 selector 拒绝 RC 源" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="315" width="390" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i40" value="GPS_RTCM_DATA" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="370" width="270" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i41" value="MAVLink v2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="370" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i42" value="handle_message_gps_rtcm_data" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="370" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i43" value="rtcm_corrections" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="370" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i44" value="gps 驱动串口注入接收机" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="370" width="390" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i50" value="HEARTBEAT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="425" width="270" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i51" value="MAVLink v2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="425" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i52" value="handle_message_heartbeat" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="425" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i53" value="telemetry_status" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="425" width="310" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-i54" value="GCS 识别 / 链路状态" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5FBFF;strokeColor=#90CAF9;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="425" width="390" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-outband" value="② 出站：PX4 → QGC（MavlinkStream，UDP 18570 → 14550）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=12;fontStyle=1;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="30" y="490" width="1480" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h5" value="PX4 uORB 源" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="30" y="525" width="270" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h6" value="MavlinkStream" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="310" y="525" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h7" value="频率 / 传输" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="480" y="525" width="310" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h8" value="MAVLink 消息" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="800" y="525" width="310" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-h9" value="QGC 端" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=10;fontStyle=1;align=center" vertex="1" parent="1">
+          <mxGeometry x="1120" y="525" width="390" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o00" value="vehicle_global_position" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="555" width="270" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o01" value="GLOBAL_POSITION_INT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="555" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o02" value="50 Hz" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="555" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o03" value="UDP 18570→14550" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="555" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o04" value="QGC 地图位置" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="555" width="390" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o10" value="sensor_gps" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="600" width="270" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o11" value="GPS_RAW_INT / GPS2_RAW" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="600" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o12" value="5 Hz（NORMAL 模式）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="600" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o13" value="同上" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="600" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o14" value="卫星数/精度/RTK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="600" width="390" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o20" value="input_rc" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="645" width="270" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o21" value="RC_CHANNELS" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="645" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o22" value="20 Hz" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="645" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o23" value="同上" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="645" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o24" value="遥控通道显示" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="645" width="390" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o30" value="actuator_outputs" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="690" width="270" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o31" value="SERVO_OUTPUT_RAW_0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="690" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o32" value="50 Hz" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="690" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o33" value="同上" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="690" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o34" value="电机输出" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="690" width="390" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o40" value="vehicle_attitude" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="735" width="270" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o41" value="ATTITUDE / QUATERNION" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="735" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o42" value="50 Hz" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="735" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o43" value="同上" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="735" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o44" value="姿态" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="735" width="390" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o50" value="vehicle_local_position_setpoint" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="780" width="270" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o51" value="POSITION_TARGET_LOCAL_NED" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="780" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o52" value="50 Hz" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="780" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o53" value="同上" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="780" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o54" value="目标可视化" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="780" width="390" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o60" value="vehicle_command_ack" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="30" y="825" width="270" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o61" value="COMMAND_ACK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="310" y="825" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o62" value="事件触发" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="480" y="825" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o63" value="同上" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="800" y="825" width="310" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-o64" value="命令结果" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F7FCF5;strokeColor=#A5D6A7;fontSize=9.5;fontStyle=0;align=left;verticalAlign=middle;spacingLeft=6" vertex="1" parent="1">
+          <mxGeometry x="1120" y="825" width="390" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p04-note" value="代码索引：mavlink_main.cpp:1090-1175（init_udp）、:900-945（send_finish/UDP sendto）、:2401（-f forwarding）；&#10;mavlink_receiver.cpp:3740-3825（recvfrom/源地址学习）、:494（COMMAND_LONG）、:1061（SET_MODE）、:1177（SET_POSITION_TARGET_LOCAL_NED）、:2231（RC override）、:2318（MANUAL_CONTROL）、:2903（GPS_RTCM_DATA）。&#10;QGC 默认监听 14550；PX4 GCS 链路绑定 18570。若 PX4 收不到 QGC，先查 QGC 的 UDP 链路目标端口和本机防火墙。" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#4E342E;fillColor=#EFEBE9;strokeColor=#A1887F;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="30" y="930" width="1480" height="60" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="05 ROS 2 / uXRCE-DDS 链路" id="p05">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p05-title" value="ROS 2 / uXRCE-DDS 链路：话题、版本后缀、QoS 与 Offboard 指令路径" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="380" y="15" width="840" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-sub" value="PX4 是 XRCE-DDS Client，MicroXRCEAgent 是 Agent；ROS 2 节点只看到 /fmu/out 与 /fmu/in 话题" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#555555" vertex="1" parent="1">
+          <mxGeometry x="350" y="55" width="900" height="22" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p05-outband" value="① PX4 → ROS 2：/fmu/out（PX4 发布，ROS 订阅）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=11;fontStyle=1;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="30" y="90" width="1530" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-cmd" value="commander&#10;vehicle_status (v4)&#10;vehicle_command_ack (v1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="135" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-ekf" value="EKF2&#10;vehicle_local_position (v1)&#10;vehicle_global_position" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="225" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-gps" value="VehicleGPSPosition&lt;br&gt;vehicle_gps_position（SensorGps）&lt;br&gt;/fmu/out/vehicle_gps_position（无版本后缀）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="315" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-uxr" value="uxrce_dds_client&#10;UDP 8888 → Agent&#10;&#10;SendTopicsSubs::update()&#10;uORB → ucdr 序列化&#10;best-effort + transient-local" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="370" y="160" width="250" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-agt" value="MicroXRCEAgent&#10;udp4 -p 8888&#10;XRCE ↔ DDS 桥" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="690" y="190" width="220" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-rosout" value="ROS 2 节点&#10;ax_circular_flight&#10;&#10;订阅：&#10;/fmu/out/vehicle_status_v4&#10;/fmu/out/vehicle_local_position_v1&#10;（BEST_EFFORT）&#10;&#10;versionedTopic&lt;MsgT&gt;()&#10;按 MESSAGE_VERSION 拼后缀" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=10;align=left;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="990" y="130" width="560" height="210" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p05-inband" value="② ROS 2 → PX4：/fmu/in（ROS 发布，PX4 订阅）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#2E7D32;fontSize=11;fontStyle=1;align=left;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="30" y="430" width="1530" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-rosin" value="ROS 2 节点发布&#10;&#10;/fmu/in/offboard_control_mode&#10;/fmu/in/trajectory_setpoint&#10;/fmu/in/vehicle_command&#10;&#10;50 Hz 定时器；先持续发 setpoint&#10;再 arm → OFFBOARD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=10;align=left;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="990" y="475" width="560" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-agt2" value="MicroXRCEAgent&#10;DDS → XRCE&#10;反序列化后下发" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="690" y="535" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-uxr2" value="RcvTopicsPubs&#10;on_topic_update()&#10;ucdr_deserialize&#10;→ uORB publish" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="370" y="515" width="250" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-orb" value="uORB&#10;vehicle_command&#10;offboard_control_mode&#10;trajectory_setpoint" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="515" width="260" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-cmd2" value="commander&#10;handle_command / offboard 检查&#10;vehicle_control_mode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="640" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-mc" value="mc_pos_control&#10;消费 trajectory_setpoint" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="40" y="740" width="260" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p05-vers" value="版本后缀规则（src/modules/uxrce_dds_client/utilities.hpp:27-42）&#10;MESSAGE_VERSION != 0 → 话题名追加 _vN&#10;VehicleStatus=4 → _v4；VehicleLocalPosition=1 → _v1&#10;OffboardControlMode / TrajectorySetpoint / VehicleCommand=0 → 不加后缀" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#4A148C;fillColor=#F3E5F5;strokeColor=#CE93D8;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="690" y="690" width="860" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-qos" value="QoS：PX4 发布端 TRANSIENT_LOCAL + BEST_EFFORT；ROS 订阅必须 BEST_EFFORT，否则收不到。&#10;PX4 接收端 VOLATILE + BEST_EFFORT；ROS 发布用默认 RELIABLE 也可兼容。&#10;时间：UXRCE_DDS_SYNCT=1，uXRCE 用 Agent 时间偏移修正消息 timestamp；UXRCE_DDS_SYNCC=0 不改系统时钟。" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#1B5E20;fillColor=#F1F8E9;strokeColor=#AED581;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="690" y="780" width="860" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-note" value="节点关键代码：ax_circular_flight.cpp:63-72 versionedTopic；:114-135 订阅/发布；:163-196 状态机；:371-399 offboard 与命令。&#10;启动：MicroXRCEAgent udp4 -p 8888；ros2 run ax_circular_flight ax_circular_flight。" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="40" y="860" width="620" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p05-e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p05-cmd" target="p05-uxr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p05-ekf" target="p05-uxr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p05-gps" target="p05-uxr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e4" value="UDP 8888" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p05-uxr" target="p05-agt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e5" value="DDS/RTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p05-agt" target="p05-rosout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2E7D32" edge="1" parent="1" source="p05-rosin" target="p05-agt2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e7" value="UDP 8888" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2E7D32;fontSize=9" edge="1" parent="1" source="p05-agt2" target="p05-uxr2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2E7D32" edge="1" parent="1" source="p05-uxr2" target="p05-orb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2E7D32" edge="1" parent="1" source="p05-orb" target="p05-cmd2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p05-e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#2E7D32" edge="1" parent="1" source="p05-orb" target="p05-mc">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="330" y="560" />
+              <mxPoint x="330" y="770" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="06 Offboard 控制闭环" id="p06">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p06-title" value="Offboard 控制闭环：从 trajectory_setpoint 到 Gazebo 电机转速" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="380" y="15" width="840" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-sub" value="本次圆周飞行实际经过的控制器与执行器链；每一级都通过 uORB 解耦" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#555555" vertex="1" parent="1">
+          <mxGeometry x="420" y="55" width="760" height="22" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p06-sp" value="trajectory_setpoint&#10;position / velocity / acceleration / yaw（NED）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="95" width="560" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-pos" value="mc_pos_control&#10;MulticopterPositionControl::Run()&#10;PositionControl::update() → 姿态设定点" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="185" width="560" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-attsp" value="vehicle_attitude_setpoint&#10;q_d + thrust_body" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="290" width="560" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-att" value="mc_att_control&#10;姿态误差 → 角速率设定点" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="380" width="560" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-ratesp" value="vehicle_rates_setpoint&#10;roll/pitch/yaw rate + thrust" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="485" width="560" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-rate" value="mc_rate_control&#10;角速率 PID → torque；油门 → thrust" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="575" width="560" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-thr" value="vehicle_thrust_setpoint + vehicle_torque_setpoint&#10;归一化推力/力矩（FRD）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="680" width="560" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-alloc" value="control_allocator&#10;CA_AIRFRAME=0（四旋翼 X）→ actuator_motors[0..3]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="770" width="560" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-mot" value="actuator_motors&#10;control[0..3] ∈ [0,1]（NaN=未使用）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F57F17;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="520" y="870" width="560" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p06-func" value="FunctionMotors&#10;SIM_GZ_EC_FUNC1=101 …&#10;归一化 → SIM_GZ_EC_MIN/MAX&#10;（190…1466）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1140" y="850" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-gz" value="GZMixingInterfaceESC&#10;gz.msgs.Actuators.velocity&#10;发布 /netdrone_0/command/motor_speed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1140" y="960" width="250" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-gz2" value="Gazebo&#10;MulticopterMotorModel ×4&#10;motorConstant / momentConstant&#10;→ 桨叶推力/反扭矩&#10;→ ODE 刚体动力学" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#2E7D32;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="1420" y="870" width="150" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p06-gate" value="vehicle_control_mode 是门控条件：&#10;flag_control_offboard_enabled + position/velocity/attitude/rates 对应位&#10;由 commander 在 updateControlMode() 中按 nav_state 生成。" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#1B5E20;fillColor=#E8F5E9;strokeColor=#A5D6A7;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="80" y="300" width="380" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-note1" value="mc_pos_control：:435 取 setpoint；:461 OFFBOARD 分支&#10;:603 发 local_pos_sp；:609 发 attitude_sp&#10;mc_att_control：:369 发 rates_sp&#10;mc_rate_control：:260 发 thrust；:264 发 torque" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="80" y="95" width="400" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-note2" value="control_allocator：:378 取 torque；:390 取 thrust&#10;:716 组装 actuator_motors；:744 发布&#10;FunctionMotors：:52 订阅 actuator_motors；:65 更新&#10;GZMixingInterfaceESC：:65 输出；:79 组装；:90 发布" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#0D47A1;fillColor=#E3F2FD;strokeColor=#90CAF9;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="80" y="720" width="400" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-note3" value="CA_ROTOR0..3_PX/PY 定义电机位置；KM 定义反扭矩符号&#10;SIM_GZ_EC_FUNC1..4=101..104 → Motor1..4&#10;SIM_GZ_EC_MIN=190 / MAX=1466 对齐 SDF maxRotVelocity&#10;MPC_THR_HOVER=0.32" style="text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#1B5E20;fillColor=#F1F8E9;strokeColor=#AED581;spacingLeft=8;spacingTop=4" vertex="1" parent="1">
+          <mxGeometry x="80" y="890" width="400" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-feedback" value="物理反馈：Gazebo 的 IMU/NavSat/Mag 又通过 gz_bridge 写回 uORB，进入 EKF2，形成闭环（见 02/03 页）" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#4E342E;fillColor=#EFEBE9;strokeColor=#A1887F;spacingLeft=8" vertex="1" parent="1">
+          <mxGeometry x="80" y="1030" width="900" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="p06-e1" value="NED 位置/速度/加速度" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-sp" target="p06-pos">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e2" value="姿态四元数 + 推力" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-pos" target="p06-attsp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p06-attsp" target="p06-att">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e4" value="角速率 + 推力" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-att" target="p06-ratesp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p06-ratesp" target="p06-rate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e6" value="推力/力矩" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-rate" target="p06-thr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00" edge="1" parent="1" source="p06-thr" target="p06-alloc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e8" value="电机指令" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-alloc" target="p06-mot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e9" value="订阅 uORB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-mot" target="p06-func">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e10" value="[0,1] → 190..1466" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-func" target="p06-gz">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p06-e11" value="gz-transport" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;strokeColor=#EF6C00;fontSize=9" edge="1" parent="1" source="p06-gz" target="p06-gz2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
