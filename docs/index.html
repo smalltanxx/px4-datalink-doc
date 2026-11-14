@@ -4882,6 +4882,634 @@ failsafe 或用户接管，不一定是解锁被拒。</p>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--output</span> diagrams/hires/00_总体链路.png <span class="dt">\</span></span>
 <span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;diagrams/PX4_1.18_数据链路图.drawio&quot;</span></span></code></pre></div>
 <hr />
+<h2 id="链路时延本地-sitl-测试非实机">14. 链路时延：本地 SITL
+测试（非实机）</h2>
+<p>前面 13
+章回答”数据走哪条路”，这一章回答”走完要多久”。全部数字来自<strong>本地
+SITL</strong> （PX4 v1.18.0-rc1 + Gazebo Harmonic 8.15 + 同一台机器上的
+ROS 2 / MAVLink 端点），
+<strong>不是实机，也不是真实串口或真实网络</strong>。锁步调度和 UDP
+loopback 会让时延明显小于真机，
+不能直接外推。四个实验的原始数据、脚本和逐项推导在
+<code>实验/2026-11-14_latency/</code>。</p>
+<h3 id="先分清两种时间仿真时间与墙钟">14.1
+先分清两种时间：仿真时间与墙钟</h3>
+<p>这套 SITL
+构建启用了锁步调度器（<code>build/px4_sitl_default/build.ninja</code> 的
+<code>DEFINES</code> 含 <code>-DENABLE_LOCKSTEP_SCHEDULER</code>），所以
+<code>hrt_absolute_time()</code> 不读主机时钟：</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">// platforms/posix/src/px4/common/drv_hrt.cpp:112-118</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>hrt_abstime hrt_absolute_time<span class="op">()</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#if defined(ENABLE_LOCKSTEP_SCHEDULER)</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> lockstep_scheduler<span class="op">.</span>get_absolute_time<span class="op">();</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#else</span></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>    px4_clock_gettime<span class="op">(</span>CLOCK_MONOTONIC<span class="op">,</span> <span class="op">&amp;</span>ts<span class="op">);</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>时间</th>
+<th>来源</th>
+<th>用在哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>仿真时间</strong></td>
+<td>gz <code>/clock</code> → <code>lockstep_scheduler</code> →
+<code>hrt_absolute_time()</code></td>
+<td>PX4 全部 uORB <code>timestamp</code>；gz 消息
+<code>header.stamp</code></td>
+</tr>
+<tr>
+<td><strong>墙钟</strong></td>
+<td>主机 <code>CLOCK_MONOTONIC</code></td>
+<td>ROS 2 回调、pymavlink 收发、gz 订阅回调</td>
+</tr>
+</tbody>
+</table>
+<p>PX4
+内部时间戳相减得到的就是仿真时间口径的时延，不需要换算；一旦跨到主机侧（ROS
+2、 MAVLink、gz 订阅），必须先用 <code>/clock</code> 建立映射
+<code>sim_us = a + b·host_us</code>。两次实验拟合的 实时因子分别是
+<strong>b = 0.9999988</strong>（E1，35 s 窗口，残差 RMS 32.5 µs）和
+<strong>b = 1.0000095</strong> （E2，61 s 窗口，残差 p95 424 µs）——偏离
+1.0 都在 1e-5 量级，说明锁步下仿真时间与墙钟基本
+同速，但<strong>不能假设严格相等</strong>。E2
+还发现：<code>/clock</code> 在锁步停顿时会出现 ~100 ms 的离群点，
+用全局线性拟合会把尾部时延算大（p95 从 895 µs 抬到 3912
+µs），所以跨域折算应优先用 <strong>相邻两条 <code>/clock</code>
+逐点插值</strong>，全局拟合只作对照。</p>
+<p>仿真时间还是<strong>离散的</strong>：gz 物理步长 4
+ms（<code>Tools/simulation/gz/worlds/default.sdf:5</code>，
+<code>max_step_size=0.004</code>），锁步时钟只在 <code>/clock</code>
+回调里推进，所以 PX4 内部时间戳落在 4 ms
+栅格上。这决定了后面所有”逐级时延”的分辨率上限：<strong>要么 0，要么
+4000 µs，中间没有别的值</strong>。</p>
+<blockquote>
+<p>口径：本章表格除注明”墙钟”外，单位都是<strong>仿真时间
+µs</strong>；统计量给 n / p50 / p95 / max。</p>
+</blockquote>
+<h3 id="传感器上行gazebo-gz_bridge-uorb">14.2 传感器上行：Gazebo →
+gz_bridge → uORB</h3>
+<p><strong>方法</strong>：gz 侧用 Python
+探针（<code>gz.transport13</code>）订阅 IMU/气压计/磁力计/NavSat 与
+<code>/clock</code>， 每条消息记录
+<code>(header.stamp, host_mono)</code>；PX4 侧从 ULog 取
+<code>sensor_combined</code> 等 topic 的
+<code>timestamp</code>；按”sim_stamp ≤ uORB.timestamp
+的最近一条”配对。</p>
+<p><strong>采样栅格</strong>（实测，35 s 窗口）：</p>
+<table>
+<thead>
+<tr>
+<th>传感器</th>
+<th>标称</th>
+<th>实测周期中位</th>
+<th>抖动 p95</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IMU</td>
+<td>250 Hz</td>
+<td>4000 µs</td>
+<td>0</td>
+<td>正好等于物理步长</td>
+</tr>
+<tr>
+<td>气压计</td>
+<td>50 Hz</td>
+<td>20000 µs</td>
+<td>0</td>
+<td>5 步</td>
+</tr>
+<tr>
+<td>磁力计</td>
+<td>100 Hz</td>
+<td>8000 µs</td>
+<td>4000</td>
+<td>2 步/3 步交替，平均 100 Hz</td>
+</tr>
+<tr>
+<td>GPS</td>
+<td>10 Hz</td>
+<td>100000 µs</td>
+<td>0</td>
+<td>25 步</td>
+</tr>
+</tbody>
+</table>
+<p><strong>上行时延</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>通道</th>
+<th>uORB topic</th>
+<th>n</th>
+<th>p50</th>
+<th>p95</th>
+<th>max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IMU</td>
+<td><code>sensor_combined</code></td>
+<td>8756</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>气压计</td>
+<td><code>sensor_baro</code></td>
+<td>35</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>磁力计</td>
+<td><code>sensor_mag</code></td>
+<td>35</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>GPS</td>
+<td><code>sensor_gps</code></td>
+<td>35</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>8758 条 gz IMU 对 8756 条 uORB，配对成功率 100%，丢失 2
+条（0.02%）。</p>
+<p><strong>为什么全是
+0</strong>：不是探针坏了，是锁步的构造性质。gz_bridge 的四个回调都用
+<code>hrt_absolute_time()</code>
+重新打戳（<code>GZBridge.cpp:434</code>/<code>:444</code>、<code>:395</code>/<code>:402</code>、<code>:408</code>、<code>:670</code>/<code>:729-730</code>），
+gz 的 <code>header.stamp</code> 根本不进 uORB；而锁步下 PX4
+处理这条消息期间仿真时钟冻结， 回调读到的 hrt 恰好等于该步的 gz
+时刻。所以<strong>仿真时间口径的上行时延结构性地为 0</strong>，
+真正的成本是 4 ms 采样栅格：gz 每 4 ms 才产生一个 IMU
+样本，传感器再快也没有用。</p>
+<p><strong>墙钟侧只剩一个上界</strong>：gz 传感器消息到达主机 → 下一条
+<code>/clock</code> 到达主机，这段时间就是 “PX4
+必须在这之前处理完”的预算。实测 n=8758，p50 <strong>3868
+µs</strong>、p95 <strong>3955 µs</strong> （max 102696 µs 是探针被
+Python 调度打断的离群点）。也就是说，每 4 ms 一步里，gz_bridge
+的回调与发布只占这 3.9 ms 预算中的一小段，但这一小段无法从 PX4
+侧单独测出来。</p>
+<p><strong>EKF
+段</strong>：<code>vehicle_attitude.timestamp − sensor_combined.timestamp</code>，n=32361，
+p50/p95 = 0/0，max 4000 µs（32361 条里只有 2 条晚一个 tick）。EKF2 由
+IMU 回调触发， 在同一仿真步内完成并发布。</p>
+<blockquote>
+<p><strong>测量陷阱</strong>：默认 <code>SDLOG_PROFILE</code>
+把原始传感器限到 1 Hz（<code>logged_topics.cpp:220-225</code>，
+第二参数单位是 ms），<code>sensor_accel</code> 整份日志只有 129 条。IMU
+必须用 <code>sensor_combined</code> （<code>:123</code>，全速率）。另外
+<code>sensor_accel.timestamp_sample</code> 与
+<code>sensor_combined.timestamp</code> 129/129
+逐条相等，可以反证前者就是 gz_bridge 的回调时刻。</p>
+</blockquote>
+<h3 id="控制链姿态-角速率-执行器-gazebo">14.3 控制链：姿态 → 角速率 →
+执行器 → Gazebo</h3>
+<p><strong>方法</strong>：用 high-rate
+profile（<code>SDLOG_PROFILE=17</code>，bit 4）让控制 topic 全速率记录，
+飞一段自动起飞 + 悬停（29.2 s 飞行窗口），从 ULog 逐级配对。</p>
+<p><strong>实际速率</strong>（飞行窗口内，证明 high-rate 生效）：</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>topic</th>
+<th>实测</th>
+<th>默认档</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vehicle_attitude</code></td>
+<td>250 Hz</td>
+<td>20 Hz</td>
+</tr>
+<tr>
+<td><code>vehicle_attitude_setpoint</code></td>
+<td>125 Hz</td>
+<td>20 Hz</td>
+</tr>
+<tr>
+<td><code>vehicle_rates_setpoint</code></td>
+<td>250 Hz</td>
+<td>50 Hz</td>
+</tr>
+<tr>
+<td><code>vehicle_torque_setpoint</code> /
+<code>vehicle_thrust_setpoint</code></td>
+<td>250 Hz</td>
+<td>50 Hz</td>
+</tr>
+<tr>
+<td><code>actuator_motors</code></td>
+<td>250 Hz</td>
+<td>10 Hz</td>
+</tr>
+<tr>
+<td><code>vehicle_local_position</code></td>
+<td>125 Hz</td>
+<td>10 Hz</td>
+</tr>
+</tbody>
+</table>
+<p><strong>逐级时延</strong>：</p>
+<table style="width:99%;">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>上游 → 下游</th>
+<th>n</th>
+<th>p50</th>
+<th>p95</th>
+<th>max</th>
+<th>分布</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vehicle_attitude</code> →
+<code>vehicle_attitude_setpoint</code></td>
+<td>3656</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0 µs ×3656</td>
+</tr>
+<tr>
+<td><code>vehicle_attitude_setpoint</code> →
+<code>vehicle_rates_setpoint</code></td>
+<td>7311</td>
+<td>0</td>
+<td>4000</td>
+<td>4000</td>
+<td>0 µs ×3656、4000 µs ×3655</td>
+</tr>
+<tr>
+<td><code>vehicle_rates_setpoint</code> →
+<code>vehicle_torque_setpoint</code></td>
+<td>7310</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0 µs ×7310</td>
+</tr>
+<tr>
+<td><code>vehicle_torque_setpoint</code> →
+<code>actuator_motors</code></td>
+<td>7311</td>
+<td>0</td>
+<td>0</td>
+<td>4000</td>
+<td>0 µs ×7310、4000 µs ×1</td>
+</tr>
+<tr>
+<td><code>vehicle_attitude</code> → <code>actuator_motors</code></td>
+<td>7311</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0 µs ×7311</td>
+</tr>
+</tbody>
+</table>
+<p>第二行那个 50/50 的 {0, 4000}
+不是”姿态环慢半拍”，是<strong>配对混叠</strong>：位置环 125 Hz、角速率环
+250 Hz，每个 <code>vehicle_attitude_setpoint</code> 对应两个
+<code>vehicle_rates_setpoint</code>，第二个只能配到上一条。 同理
+<code>vehicle_local_position</code> → <code>actuator_motors</code> 也是
+50/50。真实的单拍时延是 0——整条链在 <strong>同一个 4 ms tick
+内</strong>跑完。</p>
+<p>这和源码一致：四个模块都由 uORB 回调触发（<code>mc_att_control</code>
+订阅 <code>vehicle_attitude</code>
+<code>mc_att_control_main.cpp:83</code>、<code>mc_rate_control</code>
+订阅 <code>vehicle_angular_velocity</code>
+<code>MulticopterRateControl.cpp:69</code>、<code>control_allocator</code>
+订阅 <code>vehicle_torque_setpoint</code>
+<code>ControlAllocator.cpp:95-101</code>），且
+<code>control_allocator</code> 的 50 ms 兜底调度在锁步下被
+<code>#ifndef ENABLE_LOCKSTEP_SCHEDULER</code>
+编译掉（<code>ControlAllocator.cpp:100-102</code>、<code>:306-308</code>），
+不会引入额外延迟。</p>
+<p><strong>为什么位置环是 125 Hz 而不是 250 Hz</strong>：EKF2
+的预测更新经过 IMU 降采样器 （<code>imu_down_sampler.hpp:75</code>
+的半周期门限、<code>imu_down_sampler.cpp:44-45</code> 的触发判据，
+目标间隔由 <code>EKF2_PREDICT_US</code> 默认 10000 µs
+决定，<code>module.yaml:15-27</code>），并不是每个 IMU
+样本都触发；<code>PublishLocalPosition</code>
+只在预测更新时调用（<code>EKF2.cpp:829</code>），而
+<code>PublishAttitude</code> 每个 IMU
+样本都发（<code>EKF2.cpp:881</code>）。实测 local_position : attitude =
+3656 : 7311 = 1 : 2。 <strong>执行器 →
+Gazebo</strong>：<code>actuator_motors.timestamp</code> 与 gz
+<code>/netdrone_0/command/motor_speed</code> 到达主机时刻（经
+<code>/clock</code> 逐点插值折算回仿真时间）之差，n=7311，p50
+<strong>495 µs</strong>、 p95 <strong>895 µs</strong>、max 4198
+µs；<strong>99.9% 落在 1.5 ms 以内</strong>，只有 1 条跨到下一个 4 ms
+步。 墙钟到达间隔 p50 3996 µs、p95 4346 µs，说明 gz 侧按 250 Hz
+稳定接收、没有突发。 注意探针是 gz-transport 的独立订阅者，测的是”PX4
+发布 → 外部订阅者收到”，不是 gz 物理引擎
+应用命令的时刻；后者最多再晚一个物理步（+4 ms），只能由源码推。</p>
+<h3 id="ros-2-px4uxrce-dds-双向">14.4 ROS 2 ↔︎ PX4：uXRCE-DDS 双向</h3>
+<p><strong>方法</strong>：ROS 2 节点以 20 Hz 发
+<code>offboard_control_mode</code> 与
+<code>trajectory_setpoint</code>，订阅
+<code>vehicle_attitude</code>、<code>vehicle_status_v4</code>、<code>timesync_status</code>、<code>vehicle_command_ack_v1</code>，
+每条回调记录主机 <code>CLOCK_REALTIME</code>；同时用 <code>/clock</code>
+逐点插值做交叉核对。窗口 30 s， 解锁并进入 OFFBOARD。</p>
+<p><strong>下行</strong>（回调时刻 − 消息时间戳）：</p>
+<table>
+<thead>
+<tr>
+<th>topic</th>
+<th>实测发布率</th>
+<th>n</th>
+<th>p50</th>
+<th>p95</th>
+<th>max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>vehicle_status_v4</code></td>
+<td>5 Hz</td>
+<td>60</td>
+<td>692</td>
+<td>1224</td>
+<td>1529</td>
+</tr>
+<tr>
+<td><code>vehicle_command_ack_v1</code></td>
+<td>事件</td>
+<td>15</td>
+<td>660</td>
+<td>1017</td>
+<td>1051</td>
+</tr>
+<tr>
+<td><code>timesync_status</code></td>
+<td>1 Hz</td>
+<td>30</td>
+<td>753</td>
+<td>1215</td>
+<td>1811</td>
+</tr>
+<tr>
+<td><code>vehicle_attitude</code></td>
+<td>50 Hz</td>
+<td>1502</td>
+<td>4626</td>
+<td>4979</td>
+<td>5454</td>
+</tr>
+</tbody>
+</table>
+<p>前三条都在 <strong>0.7–0.8 ms</strong>，这才是 DDS
+链路本身。<code>vehicle_attitude</code> 的 4.6 ms 不是链路慢：
+<code>dds_topics.yaml:65-67</code> 给它设了
+<code>rate_limit: 50.</code>，writer 每 20 ms 才发一次”当前最新样本”，
+消息里的 <code>timestamp</code> 是 uORB
+的发布时刻，所以测到的是”采样栅格 + 传输”；拿同类事件的 ack（660
+µs）当基准，链路部分仍是亚毫秒。</p>
+<p><strong>时间戳为什么能直接比</strong>：PX4 在序列化时用
+<code>time_offset_us</code> 把 uORB 的仿真时间戳换算成 Agent/ROS
+的时间域（<code>dds_topics.h.em</code> 的
+<code>ucdr_serialize_method(..., time_offset_us)</code>）， 所以 ROS
+侧收到的 <code>msg.timestamp</code> 已经是 epoch µs，直接和回调的
+<code>CLOCK_REALTIME</code> 相减即可， 不需要自己拟合
+<code>/clock</code>。话题名还会按 <code>MESSAGE_VERSION</code>
+加后缀（<code>utilities.hpp:27-48</code>）， 所以实际是 <code>_v4</code>
+/ <code>_v1</code>，不是 yaml 里写的裸名。</p>
+<p><strong>上行</strong>：发
+<code>vehicle_command</code>（<code>DO_SET_MODE</code>，param1=1、param2=6）→
+<code>vehicle_command_ack</code>， n=15，min 546 / p50
+<strong>8577</strong> / p95 12836 / max 13194 µs，全部
+ACCEPTED。这个数<strong>不能</strong>当 链路时延：commander 空闲时每 10
+ms（仿真时间）轮询一次（<code>Commander.hpp:222</code>、
+<code>Commander.cpp:2162</code>），锁步下表现为 0/4/8/12 ms 四档，实测
+p50 档约 8 ms，占 RTT 的 93%。 扣掉轮询后，纯链路（上行 + ack 下行）只有
+<strong>0.7–1.3 ms</strong>，上行本身 <strong>≲0.5 ms</strong>。</p>
+<p><strong>timesync 的 RTT 全是 0</strong>：<code>Timesync.cpp:54</code>
+用 <code>hrt</code>（仿真时间）算 RTT，而 <code>uxr_sync_session</code>
+阻塞期间锁步时钟不推进，往返被量化成 0。它不能当链路 RTT 用；能用的
+旁证是 <code>observed_offset − estimated_offset</code> 的 p50 = −144
+µs，37 s 内估计值只漂了 16 µs。</p>
+<h3 id="mavlink-qgc-链路-1">14.5 MAVLink / QGC 链路</h3>
+<p><strong>方法</strong>：pymavlink（v2 common + 原生 UDP socket）绑定
+14550，向 PX4 的 18570 发， 采集 25 s。PING 必须用
+<code>target_system=0</code>、<code>target_component=0</code>——PX4
+只把广播 PING 当请求 （<code>mavlink_receiver.cpp:1912-1917</code>），带
+1/1 的不会回包。</p>
+<table>
+<thead>
+<tr>
+<th>指标（墙钟 µs）</th>
+<th>n</th>
+<th>p50</th>
+<th>p95</th>
+<th>max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PING RTT</td>
+<td>249</td>
+<td>251</td>
+<td>527</td>
+<td>5377607531*</td>
+</tr>
+<tr>
+<td><code>PARAM_REQUEST_READ</code> → <code>PARAM_VALUE</code> RTT</td>
+<td>25</td>
+<td>456</td>
+<td>1876</td>
+<td>1916</td>
+</tr>
+<tr>
+<td>HEARTBEAT 到达间隔</td>
+<td>24</td>
+<td>1000021</td>
+<td>1000143</td>
+<td>1000276</td>
+</tr>
+<tr>
+<td><code>LOCAL_POSITION_NED</code> 单向（相对最小值）</td>
+<td>1250</td>
+<td>3995</td>
+<td>4306</td>
+<td>4529</td>
+</tr>
+</tbody>
+</table>
+<p>* 2 个坏样本：<code>time_usec</code> 是 64 位，MAVLink v1
+编码会截断；剔除后 p50/p95 不变。</p>
+<ul>
+<li><strong>PING 0.25
+ms</strong>：回包在接收线程内直接完成（<code>mavlink_receiver.cpp:1912-1924</code>），
+不经过 1.5 ms 主循环，所以比参数快一个量级。</li>
+<li><strong>PARAM 0.46 ms / p95 1.88
+ms</strong>：参数请求走主循环，<code>mavlink_main.cpp:2552</code> 的
+<code>_main_loop_delay</code> 被钳到 1500
+µs（<code>:90</code>、<code>:2555-2561</code>、<code>mavlink_main.h:546</code>），
+命中周期边沿时多付一个周期——实测正好呈 0.13–0.5 ms 与约 1.9 ms
+两簇。</li>
+<li><strong>心跳间隔 1.000021 s</strong>，主循环的 1.5 ms 节拍没有让 1
+Hz 心跳产生可见抖动。</li>
+<li><strong><code>LOCAL_POSITION_NED</code>
+只能给相对值</strong>：<code>time_boot_ms</code> 是 PX4 的
+hrt（仿真时间），与主机
+墙钟没有公共原点。这里用”减去观测到的最小偏移”做基线（假设最快一条≈0），得到
+p50 +4.0 ms、max +4.5 ms；这个 4 ms
+与仿真栅格同量级，<strong>不能当绝对链路时延</strong>。</li>
+<li>QGC 没有接入，测的是 pymavlink 端点；真机 MAVLink
+时延由波特率、射频和 QGC 解析决定， 不能外推。</li>
+</ul>
+<h3 id="实测与源码预算对照">14.6 实测与源码预算对照</h3>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>链路</th>
+<th>源码预算（EXPECTED.md）</th>
+<th>实测 p50</th>
+<th>实测 p95</th>
+<th>差异解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>传感器上行</td>
+<td>0–4 ms（4 ms 栅格）</td>
+<td>0（sim）</td>
+<td>0</td>
+<td>锁步同一步内发布；墙钟上界 3868/3955 µs</td>
+</tr>
+<tr>
+<td>控制链（PX4 内）</td>
+<td>4–8 ms</td>
+<td>0（同一 tick）</td>
+<td>0</td>
+<td>五级都在一个 4 ms tick 内</td>
+</tr>
+<tr>
+<td>执行器 → Gazebo</td>
+<td>≤ 4.5 ms</td>
+<td>495</td>
+<td>895</td>
+<td>gz 订阅者口径；物理应用最多再晚一步</td>
+</tr>
+<tr>
+<td>ROS 2 下行</td>
+<td>0–1 ms</td>
+<td>692（status）</td>
+<td>1224</td>
+<td>与预算一致；attitude 4.6 ms 是 50 Hz 限速</td>
+</tr>
+<tr>
+<td>ROS 2 上行</td>
+<td>0–1 ms</td>
+<td>≲500</td>
+<td>—</td>
+<td>命令 RTT 8577 µs 里 93% 是 commander 10 ms 轮询</td>
+</tr>
+<tr>
+<td>MAVLink PING</td>
+<td>200–600 µs</td>
+<td>251</td>
+<td>527</td>
+<td>与预算一致（接收线程直回）</td>
+</tr>
+<tr>
+<td>MAVLink 参数</td>
+<td>主循环 1.5 ms 量化</td>
+<td>456</td>
+<td>1876</td>
+<td>双峰，命中主循环边沿时 +1.5 ms</td>
+</tr>
+</tbody>
+</table>
+<p>预算与实测的偏差只有两处需要解释：<strong>位置环 125 Hz 而不是 250
+Hz</strong>（EKF2 降采样器， 见 14.3），以及 <strong>ROS 2 命令 RTT 8.6
+ms</strong>（commander 轮询，不是链路）。其余各链路的 p50
+都落在预算区间内，说明”时延 ≈ 调度周期”这个判断成立。</p>
+<h3 id="这些数字不能说明什么">14.7 这些数字不能说明什么</h3>
+<ol type="1">
+<li><strong>不能外推到实机</strong>。本章全部是本地 SITL：gz transport
+是同机进程间通信，DDS 是 UDP loopback，MAVLink 也是
+loopback。真机上多出串口/网卡/无线链路的物理时延、驱动缓冲和
+丢包重传，量级完全不同。</li>
+<li><strong>“0 µs”是锁步的构造性质，不是”PX4
+处理得无限快”</strong>。仿真时间口径下，回调与发布发生在 同一个 4 ms
+步内，所以时间戳相等；真实的处理时间只能从墙钟侧看到，而墙钟又混入主机调度。</li>
+<li><strong>逐级时延的分辨率只有 4 ms</strong>。本章所有 PX4 内部 Δ
+只能取 {0, 4000}，无法分辨 µs 级差异； 想测更细只能改仿真步长或给 PX4
+加探针，那已经超出”文档级复现”的范围。</li>
+<li><strong>单次运行、单模型</strong>。每个实验只飞了一次（29–30 s
+窗口），n 是样本数不是重复次数；
+没有做多轮重复性统计，也没有换机型、换负载。</li>
+<li><strong>QGC 没有真正接入</strong>。MAVLink 部分用的是 pymavlink
+端点，不是 QGC 应用层；QGC 的 渲染/解析延迟不在测量范围内。</li>
+<li><strong>日志会骗人</strong>。默认 <code>SDLOG_PROFILE</code> 把
+<code>actuator_motors</code> 限到 10 Hz、原始传感器限到 1 Hz；不换成
+high-rate profile 或不看 <code>logger</code> 的 interval
+语义，很容易把”记录频率” 当成”控制频率”。</li>
+<li><strong>时间戳换算有误差</strong>。PX4 在 DDS 出口用
+<code>time_offset_us</code> 把仿真时间换算成 ROS 时间， 换算精度受
+timesync 影响；本章的 timesync RTT 在锁步下量化为 0，所以下行数字里含
+一个亚毫秒级的偏移不确定度。</li>
+</ol>
+<h3 id="小结">14.8 小结</h3>
+<p>四条链路的时延几乎都由<strong>节拍和栅格</strong>决定，而不是协议栈的处理速度：</p>
+<ul>
+<li>传感器上行：4 ms 采样栅格；回调到 uORB
+发布在同一仿真步内（Δ=0）；</li>
+<li>控制链：位置环 125 Hz、姿态/角速率/分配 250 Hz，五级在同一个 4 ms
+tick 内跑完； 执行器命令到 Gazebo 订阅者 p50 0.5 ms、p95 0.9 ms；</li>
+<li>ROS 2 ↔︎ PX4：DDS 链路本身 0.7–0.8 ms；<code>vehicle_attitude</code>
+的 4.6 ms 是 50 Hz 限速栅格； 命令 RTT 8.6 ms 里 93% 是 commander 的 10
+ms 轮询；</li>
+<li>MAVLink：主循环 1.5 ms，PING 在接收线程内直接回包（见 14.5）。</li>
+</ul>
+<p><strong>一句话</strong>：在 SITL
+里，你能测到的”链路时延”主要是各环节的调度周期；协议栈本身的处理
+在亚毫秒量级。换成真机，这个结论不成立——所以本章所有数字都只标”本地测试”。</p>
 <h2 id="附录-a一页纸因果链">附录 A：一页纸因果链</h2>
 <pre class="text"><code>make px4_sitl gz_netdrone
   → PX4_SIM_MODEL=gz_netdrone
@@ -5033,11 +5661,11 @@ commit，不用 tag 名）<strong>逐字节一致</strong>，sha256 相同：</p
 </tbody>
 </table>
 <p>复现（四条的 sha256/行数应两两相同）：</p>
-<div class="sourceCode" id="cb59"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">-C</span> ~/PX4-1.18 replace <span class="at">-l</span>                                   <span class="co"># 空：没有 replace ref</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">-C</span> ~/PX4-1.18 rev-parse <span class="st">&#39;v1.18.0-rc1^{commit}&#39;</span>             <span class="co"># fca3df865af36124a28c9d607e850f111dbaaea9</span></span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a><span class="va">GIT_NO_REPLACE_OBJECTS</span><span class="op">=</span>1 <span class="fu">git</span> <span class="at">-C</span> ~/PX4-1.18 <span class="dt">\</span></span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>  show v1.18.0-rc1:src/modules/commander/failsafe/framework.cpp <span class="kw">|</span> <span class="fu">sha256sum</span></span>
-<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> https://raw.githubusercontent.com/PX4/PX4-Autopilot/fca3df865af36124a28c9d607e850f111dbaaea9/src/modules/commander/failsafe/framework.cpp <span class="kw">|</span> <span class="fu">sha256sum</span></span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">-C</span> ~/PX4-1.18 replace <span class="at">-l</span>                                   <span class="co"># 空：没有 replace ref</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> <span class="at">-C</span> ~/PX4-1.18 rev-parse <span class="st">&#39;v1.18.0-rc1^{commit}&#39;</span>             <span class="co"># fca3df865af36124a28c9d607e850f111dbaaea9</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a><span class="va">GIT_NO_REPLACE_OBJECTS</span><span class="op">=</span>1 <span class="fu">git</span> <span class="at">-C</span> ~/PX4-1.18 <span class="dt">\</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>  show v1.18.0-rc1:src/modules/commander/failsafe/framework.cpp <span class="kw">|</span> <span class="fu">sha256sum</span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> https://raw.githubusercontent.com/PX4/PX4-Autopilot/fca3df865af36124a28c9d607e850f111dbaaea9/src/modules/commander/failsafe/framework.cpp <span class="kw">|</span> <span class="fu">sha256sum</span></span></code></pre></div>
 <p>审查意见给出的 693 / 919 / 3067 / 718 / 273 / 131 / 213 / 82 / 353
 在该 commit
 下<strong>无法复现</strong>；<code>main</code>（759）、v1.16（724）、v1.15（700）、v1.14（681）也都不是
@@ -5646,7 +6274,7 @@ s）叠加在 10 Hz GPS
 <p>产物：<code>实验/2026-11-13_sensor_topics/</code>（<code>listeners.txt</code>、<code>gps_pairs.txt</code>、<code>checks.txt</code>、<code>px4.log</code>、<code>REPORT.md</code>）。</p>
 </blockquote>
 <h3 id="c.11-重建文档">C.11 重建文档</h3>
-<div class="sourceCode" id="cb62"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tools/build_docs.sh</span> v1.4     <span class="co"># 审计 → HTML → 打 DOCX 补丁 → 刷新目录域 → 导出 PDF → 归档到 迭代/</span></span></code></pre></div>
+<div class="sourceCode" id="cb63"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="ex">tools/build_docs.sh</span> v1.4     <span class="co"># 审计 → HTML → 打 DOCX 补丁 → 刷新目录域 → 导出 PDF → 归档到 迭代/</span></span></code></pre></div>
 <ul>
 <li>HTML：<code>.tools/pandoc/bin/pandoc --standalone --embed-resources --css .build/style_v13.css</code>（pandoc
 3.13；2.9 的输出结构不同）。</li>
